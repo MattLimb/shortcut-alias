@@ -6,7 +6,7 @@ As a personal project - there is no formal progression or documentation. I shall
 
 ## Install
 
-```shell
+```sh
 > pip install shortcut-alias
 ```
 
@@ -14,7 +14,7 @@ As a personal project - there is no formal progression or documentation. I shall
 
 Shortcut-alias installs the following commands onto your system:
 
-```shell
+```sh
 > shortcut-alias <command> <command_options>
 > shortcut <command> <command_options>
 > sa <command> <command_options>
@@ -53,7 +53,7 @@ Windows:
 
 Linux:
 
-```
+```sh
 export SHORTCUT_COFNIG=<filepath>
 ```
 
