@@ -5,6 +5,8 @@ from .commands import Command
 import pathlib
 import yaml
 
+__author__ = "Matt Limb <matt.limb17@gmail.com>"
+
 class Shortcut:
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", None)

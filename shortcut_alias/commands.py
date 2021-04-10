@@ -5,6 +5,8 @@ from colorama import Style
 import shlex
 import subprocess
 
+__author__ = "Matt Limb <matt.limb17@gmail.com>"
+
 class Command:
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", None)

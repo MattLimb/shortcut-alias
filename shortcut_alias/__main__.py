@@ -7,6 +7,8 @@ from . import SETTINGS, load_settings, setup_settings
 
 from .shortcut import Shortcut
 
+__author__ = "Matt Limb <matt.limb17@gmail.com>"
+
 def main():
     # Find Home Directory
     home = pathlib.Path(pathlib.Path.home(), "shortcut")

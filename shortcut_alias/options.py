@@ -1,5 +1,6 @@
 from .exceptions import RequiredValue
 
+__author__ = "Matt Limb <matt.limb17@gmail.com>"
 class Option:
     TYPES = dict(
         string=str,
