@@ -32,6 +32,7 @@ commands:
   <command_name>: # String - A simple command name.
     # Basic command settings
     description: # String - A brief description of the command
+    mode: # OPTIONAL - One of "shell", "direct" - defaults to shell. Shell uses the default shell to run the program, whereas direct bypasses the shell. 
     cmd: # String or list of strings- The command to run. (Can include `option:<option_name>` in the cmd string. This will substitute this for name of value of the option.)
     if: # String or list of strings - Conditional statements in the form of `option:<option_name>` or `command:<command_name>`.
       option:<option_name>: 
@@ -50,4 +51,4 @@ commands:
       # `command:<option_name`> - Only run this if the the command exits successfully. (Code 0)
       command:<command_name>:
         status: # Status Code integer
-        includes: # A line of output to 
+        include: # A line of output to 

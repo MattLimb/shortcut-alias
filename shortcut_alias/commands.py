@@ -13,7 +13,7 @@ class Command:
         self.description = kwargs.get("description", None)
         self.cmd = kwargs.get("cmd", None)
         self.conditionals = kwargs.get("if", [])
-
+        self.mode = kwargs.get("mode", "shell")
         self._verify()
 
     def _verify(self):
@@ -48,21 +48,7 @@ class Command:
         return var
 
     def _process_conditional(self, name, value, conditional):
-        
-        if "eq" in conditional.keys():
-            if value == conditional["eq"]:
-                return ( True, f"{value} ({name}) equal to {conditional['eq']}")
-            else:
-                return ( False, f"{value} ({name}) not equal to {conditional['eq']}")
-        
-        if "neq" in conditional.keys():
-            if value != conditional["neq"]:
-                return ( True, f"{value} ({name}) not equal to {conditional['neq']}")
-            else:
-                return ( False, f"{value} ({name}) equal to {conditional['neq']}")
-        
-        
-        if isinstance(value, (int, float)):
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
             if "gt" in conditional.keys():
                 if value > conditional["gt"]:
                     return ( True, f"{value} ({name}) greater than {conditional['gt']}")
@@ -86,19 +72,31 @@ class Command:
                     return ( True, f"{value} ({name}) less than or equal to {conditional['le']}")
                 else:
                     return ( False, f"{value} ({name}) greater than {conditional['le']}")
-
-        if isinstance(value, dict):
+    
+        elif isinstance(value, dict):
             if "return" in conditional.keys():
                 if value["return"] == conditional["return"]:
                     return ( True, f"{name} returned {conditional['return']}")
                 else:
                     return ( False, f"{name} returned {conditional['return']}")
 
-            if "includes" in conditional.keys():
-                if f"{conditional['includes']}\n" in value["output"]:
-                    return ( True, f"{value['includes']} in output of {name}")
+            if "include" in conditional.keys():
+                if ( f"{conditional['include']}\n" in value["output"] ) or ( conditional['include'] in value["output"] ):
+                    return ( True, f"{value['output']} in output of {name}")
                 else:
-                    return ( False, f"{value['includes']} in output of {name}")
+                    return ( False, f"{value['output']} in output of {name}")
+        else:
+            if "eq" in conditional.keys():
+                if value == conditional["eq"]:
+                    return ( True, f"{value} ({name}) equal to {conditional['eq']}")
+                else:
+                    return ( False, f"{value} ({name}) not equal to {conditional['eq']}")
+            
+            if "neq" in conditional.keys():
+                if value != conditional["neq"]:
+                    return ( True, f"{value} ({name}) not equal to {conditional['neq']}")
+                else:
+                    return ( False, f"{value} ({name}) equal to {conditional['neq']}")
 
         return ( False, f"{value} ({name}) is an unsupported type")
         
@@ -127,31 +125,43 @@ class Command:
     
     def run_command(self, variables):
         run, messages = self.can_run(variables)
-
+    
         if run:
+            if SETTINGS["show_command"] or SETTINGS["show_reason"] or SETTINGS["show_ouput_header"]:
+                self.output_to_term("----------------------")
+
             if SETTINGS["show_command"]:
-                self.output_to_term(f"----------------------\nRunning {self.name}")
+                self.output_to_term(f"Running {self.name}")
             
             if SETTINGS["show_reason"]:
                 if not SETTINGS["show_command"]:
-                    self.output_to_term("----------------------\nReason: {}".format(", ".join(messages)))
+                    self.output_to_term("Reason: {}".format(", ".join(messages)))
                 else:
                     self.output_to_term("Reason: {}".format(", ".join(messages)))
             
             for c, pt in enumerate(self.cmd):
                 self.cmd[c] = self._replace_var(pt, variables)
+
+            if self.mode == "shell":
+                command_line = " ".join(self.cmd)
+            else:
+                command_line = self.cmd
             
             data = []
-            if SETTINGS["show_output"]:
+            if SETTINGS["show_output_header"]:
                 if ( not SETTINGS["show_command"] ) and ( not SETTINGS["show_reason"] ):
-                    self.output_to_term(f"----------------------\nOutput\n----------------------")
+                    self.output_to_term(f"Output")
                 else:
-                    self.output_to_term(f"Output\n----------------------")
+                    self.output_to_term(f"Output")
 
-            sp = subprocess.Popen(self.cmd, shell=True, stdout=subprocess.PIPE)
+            if SETTINGS["show_command"] or SETTINGS["show_reason"] or SETTINGS["show_ouput_header"]:
+                self.output_to_term("----------------------")
+            
+            sp = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE)
 
             with sp as out:
                 data.append(out.stdout.read().decode("utf-8").strip())
+
                 if SETTINGS["show_output"]:
                     print(data[-1])
             
@@ -161,14 +171,18 @@ class Command:
             return ( sp.returncode, "\n".join(data) )
 
         else:
-            if SETTINGS["show_command"]:
-                self.output_to_term(f"----------------------\nSkipping {self.name}")
-            
-            if SETTINGS["show_command"]:
-                self.output_to_term("Reason: {}".format(", ".join(messages)))
-            
-            if SETTINGS["show_output"]:
-                self.output_to_term("----------------------\n")
+            if SETTINGS["show_skip"]:
+                if SETTINGS["show_command"] or SETTINGS["show_reason"] or SETTINGS["show_ouput_header"]:
+                    self.output_to_term("----------------------")
+
+                if SETTINGS["show_command"]:
+                    self.output_to_term(f"Skipping {self.name}")
+                
+                if SETTINGS["show_command"]:
+                    self.output_to_term("Reason: {}".format(", ".join(messages)))
+                
+                if SETTINGS["show_command"] or SETTINGS["show_reason"] or SETTINGS["show_ouput_header"]:
+                    self.output_to_term("----------------------\n")
 
             return ( 999, "" )
 

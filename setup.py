@@ -7,14 +7,14 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
     require = fh.readlines()
 
 setuptools.setup(
-    name="shortcut-alias", # Replace with your own username
-    version="0.1.0",
+    name="shortcut-alias",
+    version="0.1.1",
     author="Matt Limb",
     author_email="matt.limb17@gmail.com",
     description="Powerful Configurable Aliases",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sampleproject",
+    url="https://github.com/MattLimb/shortcut-alias/",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
