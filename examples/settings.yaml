@@ -1,4 +1,6 @@
 show_command: true
 show_reason: true
 show_output: true
+show_output_header: true
+show_skip: true
 colour: true
