@@ -157,7 +157,7 @@ class Command:
             if SETTINGS["show_command"] or SETTINGS["show_reason"] or SETTINGS["show_ouput_header"]:
                 self.output_to_term("----------------------")
             
-            sp = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE)
+            sp = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
             with sp as out:
                 data.append(out.stdout.read().decode("utf-8").strip())
