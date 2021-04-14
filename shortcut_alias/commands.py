@@ -27,7 +27,7 @@ class Command:
             self.cmd = shlex.split(self.cmd)
 
     def _replace_var(self, var, variables, context="variable"):
-        if ":" in var:
+        if var.count(":") == 1:
             pre, post = var.split(":")
 
             if pre in [ "option", "command" ]:
