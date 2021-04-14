@@ -2,6 +2,8 @@ from sys import path
 import yaml
 import pathlib
 
+from jinja2 import Environment
+
 __author__ = "Matt Limb <matt.limb17@gmail.com>"
 
 SETTINGS = {
@@ -12,6 +14,8 @@ SETTINGS = {
     "show_skip": True,
     "colour": True
 }
+
+GLOBAL_ENVIRONMENT = Environment()
 
 def load_settings(filepath):
     filepath = pathlib.Path(filepath)

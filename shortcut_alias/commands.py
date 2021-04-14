@@ -1,9 +1,11 @@
-from .exceptions import RequiredValue
-from . import SETTINGS
 from termcolor import colored
 from colorama import Style
 import shlex
 import subprocess
+import re
+
+from .exceptions import RequiredValue
+from . import SETTINGS, GLOBAL_ENVIRONMENT
 
 __author__ = "Matt Limb <matt.limb17@gmail.com>"
 
@@ -26,27 +28,15 @@ class Command:
         if isinstance(self.cmd, str):
             self.cmd = shlex.split(self.cmd)
 
-    def _replace_var(self, var, variables, context="variable"):
-        if var.count(":") == 1:
-            pre, post = var.split(":")
+    def _replace_var(self, var, variables):
+        template = GLOBAL_ENVIRONMENT.from_string(var)
+        rendered = template.render(**variables)
 
-            if pre in [ "option", "command" ]:
-
-                if post in variables[pre]:
-                    tvar = variables[pre][post]
-                    
-                    if context == "variable":
-                        if isinstance(tvar, dict):
-                            return tvar["output"]
-                        else:
-                            return tvar
-                    elif context == "conditional":
-                        return tvar
-                    
-            return var
-
-        return var
-
+        if "{{" in rendered and "}}" in rendered:
+            return self._replace_var(self, var, variables)
+        
+        return rendered
+        
     def _process_conditional(self, name, value, conditional):
         if isinstance(value, (int, float)) and not isinstance(value, bool):
             if "gt" in conditional.keys():
@@ -108,7 +98,7 @@ class Command:
             success = []
             failure = []
             for name, conditional in self.conditionals.items():
-                val = self._replace_var(name, variables, context="conditional")
+                val = self._replace_var(name, variables)
                 
                 des, message = self._process_conditional(name, val, conditional)
                 
