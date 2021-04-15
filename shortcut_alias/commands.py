@@ -7,7 +7,7 @@ import re
 import os
 
 from .exceptions import RequiredValue
-from . import SETTINGS, GLOBAL_ENVIRONMENT
+from . import SETTINGS, GLOBAL_TEMPLATE_ENVIRONMENT, convert_all_sets
 
 __author__ = "Matt Limb <matt.limb17@gmail.com>"
 
@@ -19,6 +19,9 @@ class Command:
         self.cmd = kwargs.get("cmd", None)
         self.conditionals = kwargs.get("if", [])
         self.mode = kwargs.get("mode", "shell")
+
+        self.config = convert_all_sets(kwargs.get("config", {}))
+
         self._verify()
 
     def _verify(self):
@@ -56,7 +59,7 @@ class Command:
 
     def _render_template(self, var, variables):
         if isinstance(var, str) and "{{" in var and "}}" in var:
-            template = GLOBAL_ENVIRONMENT.from_string(var)
+            template = GLOBAL_TEMPLATE_ENVIRONMENT.from_string(var)
             rendered = template.render(**variables)
 
             return self._render_template(rendered, variables)
@@ -233,19 +236,21 @@ class Command:
             else:
                 return ( True, success )
         
-    
     def run_command(self, variables):
+        self.SETTINGS = dict(**SETTINGS)
+        self.SETTINGS.update(self.config)
+        
         run, messages = self.can_run(variables)
-    
+
         if run:
-            if SETTINGS["show_command"] or SETTINGS["show_reason"] or SETTINGS["show_ouput_header"]:
+            if self.SETTINGS["show_command"] or self.SETTINGS["show_reason"] or self.SETTINGS["show_output_header"]:
                 self.output_to_term("----------------------")
 
-            if SETTINGS["show_command"]:
+            if self.SETTINGS["show_command"]:
                 self.output_to_term(f"Running {self.name}")
             
-            if SETTINGS["show_reason"]:
-                if not SETTINGS["show_command"]:
+            if self.SETTINGS["show_reason"]:
+                if not self.SETTINGS["show_command"]:
                     self.output_to_term("Reason: {}".format(", ".join(messages)))
                 else:
                     self.output_to_term("Reason: {}".format(", ".join(messages)))
@@ -259,31 +264,30 @@ class Command:
                 command_line = self.cmd
             
             data = []
-            if SETTINGS["show_output_header"]:
-                if ( not SETTINGS["show_command"] ) and ( not SETTINGS["show_reason"] ):
+            if self.SETTINGS["show_output_header"]:
+                if ( not self.SETTINGS["show_command"] ) and ( not self.SETTINGS["show_reason"] ):
                     self.output_to_term(f"Output")
                 else:
                     self.output_to_term(f"Output")
 
-            if SETTINGS["show_command"] or SETTINGS["show_reason"] or SETTINGS["show_ouput_header"]:
+            if self.SETTINGS["show_command"] or self.SETTINGS["show_reason"] or self.SETTINGS["show_output_header"]:
                 self.output_to_term("----------------------")
             
             if self.background:
                 sp = subprocess.Popen(command_line, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-                if SETTINGS["show_output"]:
+                if self.SETTINGS["show_output"]:
                     print("Running In Background")
             else:
                 sp = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-
                 with sp as out:
                     data.append(out.stdout.read().decode("utf-8").strip())
 
-                    if SETTINGS["show_output"]:
+                    if self.SETTINGS["show_output"]:
                         print(data[-1])
                 
-            if SETTINGS["show_output"]:
+            if self.SETTINGS["show_output"]:
                 print()
             
             if not self.background:
@@ -292,23 +296,23 @@ class Command:
                 return ( 0, "" )
 
         else:
-            if SETTINGS["show_skip"]:
-                if SETTINGS["show_command"] or SETTINGS["show_reason"] or SETTINGS["show_ouput_header"]:
+            if self.SETTINGS["show_skip"]:
+                if self.SETTINGS["show_command"] or self.SETTINGS["show_reason"] or self.SETTINGS["show_output_header"]:
                     self.output_to_term("----------------------")
 
-                if SETTINGS["show_command"]:
+                if self.SETTINGS["show_command"]:
                     self.output_to_term(f"Skipping {self.name}")
                 
-                if SETTINGS["show_command"]:
+                if self.SETTINGS["show_command"]:
                     self.output_to_term("Reason: {}".format(", ".join(messages)))
                 
-                if SETTINGS["show_command"] or SETTINGS["show_reason"] or SETTINGS["show_ouput_header"]:
+                if self.SETTINGS["show_command"] or self.SETTINGS["show_reason"] or self.SETTINGS["show_output_header"]:
                     self.output_to_term("----------------------\n")
 
             return ( 999, "" )
 
     def output_to_term(self, message):
-        if SETTINGS["colour"]:
+        if self.SETTINGS["colour"]:
             print(colored(message, "green"))
             Style.RESET_ALL
         else:

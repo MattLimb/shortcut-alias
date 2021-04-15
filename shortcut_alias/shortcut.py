@@ -2,6 +2,7 @@ from sys import path
 from .exceptions import RequiredValue
 from .options import Option
 from .commands import Command
+from . import SETTINGS, convert_all_sets
 import pathlib
 import yaml
 
@@ -13,6 +14,7 @@ class Shortcut:
         self.description = kwargs.get("description", None)
         self.cmd = kwargs.get("cmd", None)
 
+        self.config = convert_all_sets(kwargs.get("config", {}))
         self.options = kwargs.get("options", {})
         self.commands = kwargs.get("commands", {})
 
@@ -73,6 +75,8 @@ class Shortcut:
 
 
     def run_commands(self, variables):
+        SETTINGS.update(self.config)
+        
         variables = {
             "option": vars(variables),
             "command": {} 

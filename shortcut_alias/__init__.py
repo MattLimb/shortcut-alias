@@ -15,16 +15,17 @@ SETTINGS = {
     "colour": True
 }
 
-GLOBAL_ENVIRONMENT = Environment()
+GLOBAL_TEMPLATE_ENVIRONMENT = Environment()
 
 def load_settings(filepath):
     filepath = pathlib.Path(filepath)
     
     if filepath.exists():
         with filepath.open("r") as f:
-            SETTINGS.update(
-                yaml.safe_load(f.read())
-            )
+            tmp_set = yaml.safe_load(f.read())
+        
+        SETTINGS.update(convert_all_sets(tmp_set))
+
     else:
         with filepath.open("w") as f:
             f.write(
@@ -42,3 +43,25 @@ def setup_settings(filepath):
         f.write(
             yaml.safe_dump(SETTINGS, indent=2)
         )
+
+def convert_all_sets(settings):
+    # Get all setting
+    all_settings = dict(**SETTINGS)
+    all_set = settings.get("show_all")
+    n_val = True
+
+    if all_set != None:
+        if all_set == True:
+            n_val = True
+        else:
+            n_val = False
+
+        all_settings = { 
+            key: n_val 
+            for key, _ in all_settings.items()
+        }
+
+        settings.update(all_settings)
+        del settings["show_all"]
+    
+    return settings
