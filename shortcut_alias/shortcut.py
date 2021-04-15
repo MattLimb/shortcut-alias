@@ -80,11 +80,12 @@ class Shortcut:
 
         for command in self.commands:
             rc, output = command.run_command(variables)
-
-            variables["command"][command.name] = {
-                "return": rc,
-                "output": output
-            }
+            
+            if not command.background:
+                variables["command"][command.name] = {
+                    "return": rc,
+                    "output": output
+                }
 
     def add_parser(self, parser=None):
         p = parser.add_parser(self.cmd, help=self.description)
