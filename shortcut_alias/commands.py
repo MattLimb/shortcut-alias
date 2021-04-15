@@ -1,8 +1,10 @@
+from os import close
 from termcolor import colored
 from colorama import Style
 import shlex
 import subprocess
 import re
+import os
 
 from .exceptions import RequiredValue
 from . import SETTINGS, GLOBAL_ENVIRONMENT
@@ -13,6 +15,7 @@ class Command:
     def __init__(self, **kwargs):
         self.name = kwargs.get("name", None)
         self.description = kwargs.get("description", None)
+        self.background = kwargs.get("background", False)
         self.cmd = kwargs.get("cmd", None)
         self.conditionals = kwargs.get("if", [])
         self.mode = kwargs.get("mode", "shell")
@@ -265,18 +268,28 @@ class Command:
             if SETTINGS["show_command"] or SETTINGS["show_reason"] or SETTINGS["show_ouput_header"]:
                 self.output_to_term("----------------------")
             
-            sp = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-            with sp as out:
-                data.append(out.stdout.read().decode("utf-8").strip())
+            if self.background:
+                sp = subprocess.Popen(command_line, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
                 if SETTINGS["show_output"]:
-                    print(data[-1])
-            
+                    print("Running In Background")
+            else:
+                sp = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+
+                with sp as out:
+                    data.append(out.stdout.read().decode("utf-8").strip())
+
+                    if SETTINGS["show_output"]:
+                        print(data[-1])
+                
             if SETTINGS["show_output"]:
                 print()
             
-            return ( sp.returncode, "\n".join(data) )
+            if not self.background:
+                return ( sp.returncode, "\n".join(data) )
+            else:
+                return ( 0, "" )
 
         else:
             if SETTINGS["show_skip"]:
