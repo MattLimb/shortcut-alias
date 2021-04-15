@@ -31,7 +31,11 @@ class Command:
     @staticmethod
     def _attempt_type_convert(value):
         if isinstance(value, str):
-            if re.compile(r"^[0-9]+\.[0-9]+$").match(value) != None:
+            if value.lower() == "true":
+                return True
+            elif value.lower() == "false":
+                return False 
+            elif re.compile(r"^[0-9]+\.[0-9]+$").match(value) != None:
                 try:
                     v = float(value)
                     return v
