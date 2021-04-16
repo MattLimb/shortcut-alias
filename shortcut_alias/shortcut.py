@@ -28,9 +28,6 @@ class Shortcut:
         if not self.cmd:
             raise RequiredValue("'cmd' is a required value of a shortcut.")
 
-        if len(self.commands) == 0:
-            raise RequiredValue("Please specify at least one `command`.")
-
         for key, value in self.env.items():
             self.env[key] = os.environ.get(value, None)
 
