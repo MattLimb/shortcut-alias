@@ -15,7 +15,7 @@ def get_config_files(filepath, files=[]):
     filepath = pathlib.Path(filepath)
 
     for config in filepath.iterdir():
-        if config.suffix == ".yaml":
+        if config.suffix in [ ".yaml", ".yml" ]:
             files.append(config)
         else:
             files = get_config_files(config, files)
