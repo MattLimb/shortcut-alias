@@ -1,6 +1,12 @@
-from sys import path
+import sys
 import yaml
 import pathlib
+import platform
+import sys
+import re
+from datetime import datetime
+from calendar import Calendar
+from .variables import VARIABLES
 
 from jinja2 import Environment
 
@@ -65,3 +71,24 @@ def convert_all_sets(settings):
         del settings["show_all"]
     
     return settings
+
+def attempt_type_convert(value):
+    if isinstance(value, str):
+        if value.lower() == "true":
+            return True
+        elif value.lower() == "false":
+            return False 
+        elif re.compile(r"^[0-9]+\.[0-9]+$").match(value) != None:
+            try:
+                v = float(value)
+                return v
+            except:
+                return value
+        elif re.compile(r"^[0-9]+$").match(value) != None:
+            try:
+                v = int(value)
+                return v
+            except:
+                return value
+    
+    return value

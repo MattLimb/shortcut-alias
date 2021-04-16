@@ -7,7 +7,7 @@ import re
 import os
 
 from .exceptions import RequiredValue
-from . import SETTINGS, GLOBAL_TEMPLATE_ENVIRONMENT, convert_all_sets
+from . import SETTINGS, GLOBAL_TEMPLATE_ENVIRONMENT, convert_all_sets, attempt_type_convert
 
 __author__ = "Matt Limb <matt.limb17@gmail.com>"
 
@@ -33,29 +33,7 @@ class Command:
 
         if isinstance(self.cmd, str):
             self.cmd = shlex.split(self.cmd)
-
-    @staticmethod
-    def _attempt_type_convert(value):
-        if isinstance(value, str):
-            if value.lower() == "true":
-                return True
-            elif value.lower() == "false":
-                return False 
-            elif re.compile(r"^[0-9]+\.[0-9]+$").match(value) != None:
-                try:
-                    v = float(value)
-                    return v
-                except:
-                    return value
-            elif re.compile(r"^[0-9]+$").match(value) != None:
-                try:
-                    v = int(value)
-                    return v
-                except:
-                    return value
-        
-        return value
-            
+           
 
     def _render_template(self, var, variables):
         if isinstance(var, str) and "{{" in var and "}}" in var:
@@ -64,7 +42,7 @@ class Command:
 
             return self._render_template(rendered, variables)
         
-        return self._attempt_type_convert(var)
+        return attempt_type_convert(var)
         
     def _process_conditional(self, item, config, variables):
         CONDITIONAL_TEXT = "Condition {condition} {pf}: {item} ({value}) {sof} {user_specified_item} ({user_specified_value})"

@@ -1,9 +1,9 @@
-from sys import path
 from .exceptions import RequiredValue
 from .options import Option
 from .commands import Command
-from . import SETTINGS, convert_all_sets
+from . import SETTINGS, VARIABLES, convert_all_sets, attempt_type_convert
 import pathlib
+import os
 import yaml
 
 __author__ = "Matt Limb <matt.limb17@gmail.com>"
@@ -13,10 +13,11 @@ class Shortcut:
         self.name = kwargs.get("name", None)
         self.description = kwargs.get("description", None)
         self.cmd = kwargs.get("cmd", None)
-
         self.config = convert_all_sets(kwargs.get("config", {}))
         self.options = kwargs.get("options", {})
-        self.commands = kwargs.get("commands", {})
+        self.commands = kwargs.get("commands", [])
+        self.variables = kwargs.get("variables", {})
+        self.env = kwargs.get("env", {})
 
         self._verify()
 
@@ -29,6 +30,12 @@ class Shortcut:
 
         if not self.cmd:
             raise RequiredValue("'cmd' is a required value of a shortcut.")
+
+        if len(self.commands) == 0:
+            raise RequiredValue("Please specify at least one `command`.")
+
+        for key, value in self.env.items():
+            self.env[key] = os.environ.get(value, None)
 
     @staticmethod
     def new(file_contents):
@@ -73,21 +80,19 @@ class Shortcut:
         
         return shortcusts
 
-
-    def run_commands(self, variables):
+    def run_commands(self):
         SETTINGS.update(self.config)
         
-        variables = {
-            "option": vars(variables),
-            "command": {} 
-        }
+        vars = dict(**VARIABLES)
+        vars["variables"].update(self.variables)
+        vars["variables"]["env"].update(self.env)
 
         for command in self.commands:
-            rc, output = command.run_command(variables)
+            rc, output = command.run_command(vars)
             
             if not command.background:
-                variables["command"][command.name] = {
-                    "return": rc,
+                vars["commands"][command.name] = {
+                    "return": attempt_type_convert(rc),
                     "output": output
                 }
 

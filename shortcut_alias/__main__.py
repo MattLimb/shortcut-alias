@@ -2,8 +2,9 @@
 import argparse
 import os
 import pathlib
+import copy
 from colorama import init
-from . import SETTINGS, load_settings, setup_settings
+from . import SETTINGS, VARIABLES, load_settings, setup_settings
 
 from .shortcut import Shortcut
 
@@ -51,8 +52,13 @@ def main():
     if args.command == None:
         args = parser.parse_args([ "--help" ])
 
+    arg_dict = copy.copy(vars(args))
+    del arg_dict["command"]
+
+    VARIABLES["variables"]["options"] = arg_dict
+
     # Run the Command
-    commands[args.command].run_commands(args)
+    commands[args.command].run_commands()
 
 if __name__ == "__main__":
     main()
