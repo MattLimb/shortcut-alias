@@ -92,7 +92,7 @@ class Shortcut:
             
             if not command.background:
                 vars["commands"][command.name] = {
-                    "return": attempt_type_convert(rc),
+                    "returns": attempt_type_convert(rc),
                     "output": output
                 }
 
