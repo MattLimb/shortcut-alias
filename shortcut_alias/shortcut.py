@@ -25,9 +25,6 @@ class Shortcut:
         if not self.name:
             raise RequiredValue("'name' is a required value of a shortcut.")
 
-        if not self.description:
-            raise RequiredValue("'description' is a required value of a shortcut.")
-
         if not self.cmd:
             raise RequiredValue("'cmd' is a required value of a shortcut.")
 
