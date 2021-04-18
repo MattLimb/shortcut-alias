@@ -3,7 +3,6 @@ import argparse
 import os
 import pathlib
 import copy
-from sys import path
 from colorama import init
 from . import SETTINGS, VARIABLES, load_settings, setup_settings
 

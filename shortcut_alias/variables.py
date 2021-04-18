@@ -2,6 +2,8 @@ from datetime import datetime
 import platform
 import sys
 
+__author__ = "Matt Limb <matt.limb17@gmail.com>"
+
 class VAR_DATETIME:
     weekdays = {
         0: ( "Monday", "Mon" ),
@@ -120,8 +122,6 @@ VARIABLES = {
         }
     }
 }
-
-# https://www.tutorialspoint.com/unix/unix-io-redirections.htm
 
 if platform.system() == "Linux":
     VARIABLES["variables"]["linux"] = {
