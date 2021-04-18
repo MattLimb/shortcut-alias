@@ -2,12 +2,25 @@
 import argparse
 import os
 import pathlib
+import copy
+from sys import path
 from colorama import init
-from . import SETTINGS, load_settings, setup_settings
+from . import SETTINGS, VARIABLES, load_settings, setup_settings
 
 from .shortcut import Shortcut
 
 __author__ = "Matt Limb <matt.limb17@gmail.com>"
+
+def get_config_files(filepath, files=[]):
+    filepath = pathlib.Path(filepath)
+
+    for config in filepath.iterdir():
+        if config.suffix in [ ".yaml", ".yml" ]:
+            files.append(config)
+        else:
+            files = get_config_files(config, files)
+
+    return files
 
 def main():
     # Find Home Directory
@@ -31,7 +44,7 @@ def main():
     commands = dict()
 
     # Setup the commands
-    for config in pathlib.Path(setting_config, "shortcut.d").glob("*.yaml"):
+    for config in get_config_files(pathlib.Path(setting_config, "shortcut.d")):
         s = Shortcut.from_file(config)
 
         for x in s:
@@ -51,8 +64,13 @@ def main():
     if args.command == None:
         args = parser.parse_args([ "--help" ])
 
+    arg_dict = copy.copy(vars(args))
+    del arg_dict["command"]
+
+    VARIABLES["variables"]["options"] = arg_dict
+
     # Run the Command
-    commands[args.command].run_commands(args)
+    commands[args.command].run_commands()
 
 if __name__ == "__main__":
     main()
