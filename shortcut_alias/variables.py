@@ -36,14 +36,6 @@ class VAR_DATETIME:
     @property
     def weekday_short(self):
         return self.weekdays[datetime.now().weekday()][1]
-    
-    @property
-    def weekday_iso(self):
-        return self.weekday(datetime.now().isoweekday() - 1)[0]
-
-    @property
-    def weekday_iso_short(self):
-        return self.weekday(datetime.now().isoweekday() - 1)[1]
 
     @property
     def timezone(self):
@@ -55,12 +47,6 @@ VARIABLES = {
     "variables": {
         "options": {},
         "env": {},
-        "datetime_static": {
-            "date": _datetime.date,
-            "time": _datetime.time,
-            "date_utc": _datetime.date_utc,
-            "time_utc": _datetime.time_utc
-        },
         "datetime": VAR_DATETIME(),
         "platform": {
             "name": platform.system(),
