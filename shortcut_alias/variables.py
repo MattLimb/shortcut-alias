@@ -144,10 +144,10 @@ elif platform.system() == "Windows":
     VARIABLES["constants"]["shell"]["dev_null"] = "$null"
 elif platform.system() == "Darwin":
     VARIABLES["variables"]["mac"] = {
-        "mac_release": platform.win32_ver()[0],
-        "mac_version": platform.win32_ver()[1][0],
-        "mac_dev_stage": platform.win32_ver()[1][1],
-        "mac_non_release_version": platform.win32_ver()[1][2],
+        "mac_release": platform.mac_ver()[0],
+        "mac_version": platform.mac_ver()[1][0],
+        "mac_dev_stage": platform.mac_ver()[1][1],
+        "mac_non_release_version": platform.mac_ver()[1][2],
         "mac_machine": platform.mac_ver()[2]
     }
 elif platform.system() == "Java":
