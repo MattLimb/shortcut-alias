@@ -237,7 +237,7 @@ class Command:
                 self.cmd[c] = self._render_template(pt, variables)
 
             if self.mode == "shell":
-                command_line = " ".join(self.cmd)
+                command_line = " ".join([ str(c) for c in self.cmd ])
             else:
                 command_line = self.cmd
             
@@ -257,7 +257,7 @@ class Command:
                 if self.SETTINGS["show_output"]:
                     print("Running In Background")
             else:
-                sp = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                sp = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE)
 
                 with sp as out:
                     data.append(out.stdout.read().decode("utf-8").strip())
