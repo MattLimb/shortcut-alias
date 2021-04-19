@@ -8,7 +8,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="shortcut-alias",
-    version="0.2.2",
+    version="0.2.3",
     author="Matt Limb",
     author_email="matt.limb17@gmail.com",
     description="Powerful Configurable Aliases",
