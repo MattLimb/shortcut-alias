@@ -164,7 +164,7 @@ class Command:
                     negative.append(text)
                     continue
 
-                if item_val >= value_val:
+                if item_val <= value_val:
                     text = CONDITIONAL_TEXT.format(condition="le", pf="passed", item=item, value=item_val, sof="is less than or equal to", user_specified_item=value, user_specified_value=value_val)
                     positive.append(text)
                 else:
