@@ -29,7 +29,7 @@ class Command:
             raise RequiredValue("'name' is a required value of a command.")
 
         if not self.cmd:
-            raise RequiredValue("'cmd' is a rrequired value of a command")
+            raise RequiredValue("'cmd' is a r\equired value of a command")
 
         if isinstance(self.cmd, str):
             self.cmd = shlex.split(self.cmd)
@@ -55,161 +55,180 @@ class Command:
         if not isinstance(config, dict):
             config = dict(eq=config)
 
-        for key, value in config.items():
-            if key == "and":
-                p, n = self._process_conditional(item, value, variables)
-                
+        if item == "and":
+            for key, value in config.items():
+                p, n = self._process_conditional(key, value, variables)
                 if len(n) >= 1:
                     negative.append("and condition: " + " or ".join(n))
                 else:
                     positive.append("and condition: " + "  or ".join(p))
-                
-                continue
-            elif key == "or":
-                p, n = self._process_conditional(item, value, variables)
+            
+            if len(negative) > 0:
+                return [], negative
+            else:
+                return positive, []
+            
+        elif item == "or":
+            for key, value in config.items():
+                p, n = self._process_conditional(key, value, variables)
                 
                 if len(p) >= 1:
                     positive.append("or condition: " + " or ".join(p))
                 else:
                     negative.append("or condition: " + " or ".join(n))
+           
+            if len(positive) > 0:
+                return positive, []
+            else:
+                return [], negative
+        else:
+            for key, value in config.items():
+    
+                value_val = self._render_template(value, variables)
+                item_type = type(item_val)
+                value_type = type(value_val)
                 
-                continue
+                if key == "eq":
+                    if item_type == value_type:
+                        if item_val == value_val:
+                            text = CONDITIONAL_TEXT.format(condition="eq", pf="passed", item=item, value=item_val, sof="is equal to", user_specified_item=value, user_specified_value=value_val)
+                            positive.append(text)
+                        else:
+                            text = CONDITIONAL_TEXT.format(condition="eq", pf="failed", item=item, value=item_val, sof="is not equal to", user_specified_item=value, user_specified_value=value_val)
+                            negative.append(text)
+                    else:
+                        text = CONDITIONAL_TEXT.format(condition="eq_type_check", pf="failed", item=item, value=item_val, sof="does not have the same type as", user_specified_item=value, user_specified_value=value_val)
+                        negative.append(text)
 
-            value_val = self._render_template(value, variables)
-            item_type = type(item_val)
-            value_type = type(value_val)
-            
-            if key == "eq":
-                if item_type == value_type:
-                    if item_val == value_val:
-                        text = CONDITIONAL_TEXT.format(condition="eq", pf="passed", item=item, value=item_val, sof="is equal to", user_specified_item=value, user_specified_value=value_val)
+                elif key == "neq":
+                    if type(item_val) == type(value_val):
+                        if item_val != value:
+                            text = CONDITIONAL_TEXT.format(condition="neq", pf="passed", item=item, value=item_val, sof="is not equal to", user_specified_item=value, user_specified_value=value_val)
+                            positive.append(text)
+                        else:
+                            text = CONDITIONAL_TEXT.format(condition="neq", pf="failed", item=item, value=item_val, sof="is equal to", user_specified_item=value, user_specified_value=value_val)
+                            negative.append(text)
+                    else:
+                        text = CONDITIONAL_TEXT.format(condition="neq_type_check", pf="passed", item=item, value=item_val, sof="does not have the same type as", user_specified_item=value, user_specified_value=value_val)
+                        positive.append(text)
+                elif key == "gt":
+                    if item_type not in [ int, float ]:
+                        text = ALT_CONDITION_TEXT.format(condition="gt_type_check", pf="failed", item=item, value=item_val, sof="is not of type integer or float. It is", freeform=str(item_type))
+                        negative.append(text)
+                        continue
+                        
+                    if value_type not in [ int, float ]:
+                        text = ALT_CONDITION_TEXT.format(condition="gt_type_check", pf="failed", item=value, value=value_type, sof="is not of type integer or float. It is", freeform=str(value_type))
+                        negative.append(text)
+                        continue
+
+                    if item_val > value_val:
+                        text = CONDITIONAL_TEXT.format(condition="gt", pf="passed", item=item, value=item_val, sof="is greater than", user_specified_item=value, user_specified_value=value_val)
                         positive.append(text)
                     else:
-                        text = CONDITIONAL_TEXT.format(condition="eq", pf="failed", item=item, value=item_val, sof="is not equal to", user_specified_item=value, user_specified_value=value_val)
+                        text = CONDITIONAL_TEXT.format(condition="gt", pf="failed", item=item, value=item_val, sof="is not greater than", user_specified_item=value, user_specified_value=value_val)
                         negative.append(text)
-                else:
-                    text = CONDITIONAL_TEXT.format(condition="eq_type_check", pf="failed", item=item, value=item_val, sof="does not have the same type as", user_specified_item=value, user_specified_value=value_val)
-                    negative.append(text)
+                elif key == "ge":
+                    if item_type not in [ int, float ]:
+                        text = ALT_CONDITION_TEXT.format(condition="ge_type_check", pf="failed", item=item, value=item_val, sof="is not of type integer or float. It is", freeform=str(item_type))
+                        negative.append(text)
+                        continue
+                        
+                    if value_type not in [ int, float ]:
+                        text = ALT_CONDITION_TEXT.format(condition="ge_type_check", pf="failed", item=value, value=value_type, sof="is not of type integer or float. It is", freeform=str(value_type))
+                        negative.append(text)
+                        continue
 
-            elif key == "neq":
-                if type(item_val) == type(value_val):
-                    if item_val != value:
-                        text = CONDITIONAL_TEXT.format(condition="neq", pf="passed", item=item, value=item_val, sof="is not equal to", user_specified_item=value, user_specified_value=value_val)
+                    if item_val >= value_val:
+                        text = CONDITIONAL_TEXT.format(condition="ge", pf="passed", item=item, value=item_val, sof="is greater than or equal to", user_specified_item=value, user_specified_value=value_val)
                         positive.append(text)
                     else:
-                        text = CONDITIONAL_TEXT.format(condition="neq", pf="failed", item=item, value=item_val, sof="is equal to", user_specified_item=value, user_specified_value=value_val)
+                        text = CONDITIONAL_TEXT.format(condition="ge", pf="failed", item=item, value=item_val, sof="is not greater than or equal to", user_specified_item=value, user_specified_value=value_val)
                         negative.append(text)
-                else:
-                    text = CONDITIONAL_TEXT.format(condition="neq_type_check", pf="passed", item=item, value=item_val, sof="does not have the same type as", user_specified_item=value, user_specified_value=value_val)
-                    positive.append(text)
-            elif key == "gt":
-                if item_type not in [ int, float ]:
-                    text = ALT_CONDITION_TEXT.format(condition="gt_type_check", pf="failed", item=item, value=item_val, sof="is not of type integer or float. It is", freeform=str(item_type))
-                    negative.append(text)
-                    continue
-                    
-                if value_type not in [ int, float ]:
-                    text = ALT_CONDITION_TEXT.format(condition="gt_type_check", pf="failed", item=value, value=value_type, sof="is not of type integer or float. It is", freeform=str(value_type))
-                    negative.append(text)
-                    continue
+                elif key == "lt":
+                    if item_type not in [ int, float ]:
+                        text = ALT_CONDITION_TEXT.format(condition="lt_type_check", pf="failed", item=item, value=item_val, sof="is not of type integer or float. It is", freeform=str(item_type))
+                        negative.append(text)
+                        continue
+                        
+                    if value_type not in [ int, float ]:
+                        text = ALT_CONDITION_TEXT.format(condition="lt_type_check", pf="failed", item=value, value=value_type, sof="is not of type integer or float. It is", freeform=str(value_type))
+                        negative.append(text)
+                        continue
 
-                if item_val > value_val:
-                    text = CONDITIONAL_TEXT.format(condition="gt", pf="passed", item=item, value=item_val, sof="is greater than", user_specified_item=value, user_specified_value=value_val)
-                    positive.append(text)
-                else:
-                    text = CONDITIONAL_TEXT.format(condition="gt", pf="failed", item=item, value=item_val, sof="is not greater than", user_specified_item=value, user_specified_value=value_val)
-                    negative.append(text)
-            elif key == "ge":
-                if item_type not in [ int, float ]:
-                    text = ALT_CONDITION_TEXT.format(condition="ge_type_check", pf="failed", item=item, value=item_val, sof="is not of type integer or float. It is", freeform=str(item_type))
-                    negative.append(text)
-                    continue
-                    
-                if value_type not in [ int, float ]:
-                    text = ALT_CONDITION_TEXT.format(condition="ge_type_check", pf="failed", item=value, value=value_type, sof="is not of type integer or float. It is", freeform=str(value_type))
-                    negative.append(text)
-                    continue
+                    if item_val < value_val:
+                        text = CONDITIONAL_TEXT.format(condition="lt", pf="passed", item=item, value=item_val, sof="is less than", user_specified_item=value, user_specified_value=value_val)
+                        positive.append(text)
+                    else:
+                        text = CONDITIONAL_TEXT.format(condition="lt", pf="failed", item=item, value=item_val, sof="is not less than", user_specified_item=value, user_specified_value=value_val)
+                        negative.append(text)
+                elif key == "le":
+                    if item_type not in [ int, float ]:
+                        text = ALT_CONDITION_TEXT.format(condition="le_type_check", pf="failed", item=item, value=item_val, sof="is not of type integer or float. It is", freeform=str(item_type))
+                        negative.append(text)
+                        continue
+                        
+                    if value_type not in [ int, float ]:
+                        text = ALT_CONDITION_TEXT.format(condition="le_type_check", pf="failed", item=value, value=value_type, sof="is not of type integer or float. It is", freeform=str(value_type))
+                        negative.append(text)
+                        continue
 
-                if item_val >= value_val:
-                    text = CONDITIONAL_TEXT.format(condition="ge", pf="passed", item=item, value=item_val, sof="is greater than or equal to", user_specified_item=value, user_specified_value=value_val)
-                    positive.append(text)
-                else:
-                    text = CONDITIONAL_TEXT.format(condition="ge", pf="failed", item=item, value=item_val, sof="is not greater than or equal to", user_specified_item=value, user_specified_value=value_val)
-                    negative.append(text)
-            elif key == "lt":
-                if item_type not in [ int, float ]:
-                    text = ALT_CONDITION_TEXT.format(condition="lt_type_check", pf="failed", item=item, value=item_val, sof="is not of type integer or float. It is", freeform=str(item_type))
-                    negative.append(text)
-                    continue
-                    
-                if value_type not in [ int, float ]:
-                    text = ALT_CONDITION_TEXT.format(condition="lt_type_check", pf="failed", item=value, value=value_type, sof="is not of type integer or float. It is", freeform=str(value_type))
-                    negative.append(text)
-                    continue
-
-                if item_val < value_val:
-                    text = CONDITIONAL_TEXT.format(condition="lt", pf="passed", item=item, value=item_val, sof="is less than", user_specified_item=value, user_specified_value=value_val)
-                    positive.append(text)
-                else:
-                    text = CONDITIONAL_TEXT.format(condition="lt", pf="failed", item=item, value=item_val, sof="is not less than", user_specified_item=value, user_specified_value=value_val)
-                    negative.append(text)
-            elif key == "le":
-                if item_type not in [ int, float ]:
-                    text = ALT_CONDITION_TEXT.format(condition="le_type_check", pf="failed", item=item, value=item_val, sof="is not of type integer or float. It is", freeform=str(item_type))
-                    negative.append(text)
-                    continue
-                    
-                if value_type not in [ int, float ]:
-                    text = ALT_CONDITION_TEXT.format(condition="le_type_check", pf="failed", item=value, value=value_type, sof="is not of type integer or float. It is", freeform=str(value_type))
-                    negative.append(text)
-                    continue
-
-                if item_val <= value_val:
-                    text = CONDITIONAL_TEXT.format(condition="le", pf="passed", item=item, value=item_val, sof="is less than or equal to", user_specified_item=value, user_specified_value=value_val)
-                    positive.append(text)
-                else:
-                    text = CONDITIONAL_TEXT.format(condition="le", pf="failed", item=item, value=item_val, sof="is not less than or equal to", user_specified_item=value, user_specified_value=value_val)
-                    negative.append(text)
+                    if item_val <= value_val:
+                        text = CONDITIONAL_TEXT.format(condition="le", pf="passed", item=item, value=item_val, sof="is less than or equal to", user_specified_item=value, user_specified_value=value_val)
+                        positive.append(text)
+                    else:
+                        text = CONDITIONAL_TEXT.format(condition="le", pf="failed", item=item, value=item_val, sof="is not less than or equal to", user_specified_item=value, user_specified_value=value_val)
+                        negative.append(text)
 
         return positive, negative
         
 
     def can_run(self, variables):
+        ROOT_CONDITIONAL = "and"
+        success = []
+        failure = []
+
+        decide_conditional = {
+            "and": lambda s, f: len(f) > 0,
+            "or": lambda s, f: len(s) <= 0
+        }
+
         if len(self.conditionals) == 0:
             return ( True, [ "No Conditionals" ] )
         else:
-            success = []
-            failure = []
 
             for name, conditional in self.conditionals.items():
                 if name == "and":
+                    ROOT_CONDITIONAL = "and"
+                    
                     for n, c in conditional.items():
                         suc, fail = self._process_conditional(n, c, variables)
                     
-                    if len(fail) >= 1:
-                        failure.extend(fail)
-                    else:
-                        success.extend(suc)
+                        if len(fail) >= 1:
+                            failure.extend(fail)
+                        else:
+                            success.extend(suc)
 
-                    continue
-                if name == "or":
+                elif name == "or":
+                    ROOT_CONDITIONAL = "or"
                     for n, c in conditional.items():
+                        #print(n, c)
                         suc, fail = self._process_conditional(n, c, variables)
+                        #print(suc, fail)
                     
-                    if len(suc) >= 1:
-                        success.extend(suc)
-                    else:
-                        failure.extend(fail)
-                    
-                    continue
-                    
+                        if len(suc) >= 1:
+                            success.extend(suc)
+                        else:
+                            failure.extend(fail)                    
+                else:
+                    ROOT_CONDITIONAL = "and"
+
+                    suc, fail = self._process_conditional(name, conditional, variables)
                 
-                suc, fail = self._process_conditional(name, conditional, variables)
-                
-                success.extend(suc)
-                failure.extend(fail)
-            
-            if len(failure) > 0:
+                    success.extend(suc)
+                    failure.extend(fail)
+
+            if decide_conditional[ROOT_CONDITIONAL](success, failure):
                 return ( False, failure )
             else:
                 return ( True, success )
