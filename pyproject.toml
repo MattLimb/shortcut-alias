@@ -1,6 +1,38 @@
-[build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
+[project]
+name = "shortcut-alias"
+version = "0.2.6"
+description = "Powerful Configurable Aliases"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.6"
+license = { file = "LICENSE" }
+keywords = [ "alias", "shortcut", "shortcut_alias" ]
+authors = [
+    { name = "Matt Limb", email = "matt.limb17@gmail.com"}
 ]
-build-backend = "setuptools.build_meta"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+    "colorama==0.4.4",
+    "Jinja2==2.11.3",
+    "MarkupSafe==1.1.1",
+    "PyYAML==5.4.1",
+    "termcolor==1.1.0"
+]
+
+[project.scripts]
+shortcut-alias = "shortcut_alias.__main__:main"
+shortcut = "shortcut_alias.__main__:main"
+sa = "shortcut_alias.__main__:main"
+
+[project.urls]
+homepage = "https://github.com/MattLimb/shortcut-alias/"
+
+[tool.flit.module]
+name = "shortcut_alias"
+
+[build-system]
+requires = ["flit_core <4"]
+build-backend = "flit_core.buildapi"
