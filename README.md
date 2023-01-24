@@ -1,8 +1,8 @@
 # shortcut-alias
 
-This is a personal project for configurable aliases. 
+This is a personal project for configurable multiple command aliases. 
 
-As a personal project - there is no formal progression or documentation. I shall do my best to update this project, as I find issues with it, and add new features as I find needs. 
+Disclaimer - This is a personal project, intended to learn and progress my programming knowlege. If you do find this project useful, and want to contribute, please feel free to open PRs or issues, and I'll do my best to process them as quickly as I can.
 
 ## Install
 
@@ -10,7 +10,7 @@ As a personal project - there is no formal progression or documentation. I shall
 > pip install shortcut-alias
 ```
 
-## Usage
+## Basic Usage
 
 Shortcut-alias installs the following commands onto your system:
 
@@ -60,7 +60,7 @@ export SHORTCUT_COFNIG=<filepath>
 ## settings.yaml
 
 Please view `docs/configuration.md` for this. 
-## shortcut.d files
+## shortcut files
 
 Please view `docs/shortcut_files.md` for this.
 
