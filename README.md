@@ -4,21 +4,22 @@ This is a personal project for configurable multiple command aliases.
 
 Disclaimer - This is a personal project, intended to learn and progress my programming knowlege. If you do find this project useful, and want to contribute, please feel free to open PRs or issues, and I'll do my best to process them as quickly as I can.
 
-## Install
+## Build
+
+Firstly, this repo will require that Rust is installed, along with Cargo.
+
+To install Rust, please refer to the Rust docs: https://rustup.rs/
+
+1. Clone the Git repo.
 
 ```sh
-> pip install shortcut-alias
+$ git clone https://github.com/MattLimb/shortcut-alias.git
 ```
 
-## Basic Usage
-
-Shortcut-alias installs the following commands onto your system:
+2. Install Shortcut Alias using Cargo
 
 ```sh
-> shortcut-alias <command> <command_options>
-> shortcut <command> <command_options>
-> sa <command> <command_options>
-
+$ cargo install --path .
 ```
 
 ## First Run 
@@ -31,42 +32,35 @@ On Windows:
 
 | Name            | Filepath                                     |
 | --------------- | -------------------------------------------- |
-| root folder     | `C:\Users\<username>\shortcut`               |
-| settings        | `C:\Users\<username>\shortcut\settings.yaml` |
-| commands folder | `C:\Users\<username>\shortcut\shortcut.d`    |
+| shortcut folder | `C:\Users\<username>\.shortcut`              |
 
 On Linux:
 
 | Name            | Filepath                   |
 | --------------- | -------------------------- |
-| root folder     | `~\shortcut`               |
-| settings        | `~\shortcut\settings.yaml` |
-| commands folder | `~\shortcut\shortcut.d`    |
+| shortcut folder | `~\.shortcut`               |
 
 To change this, set the environment variable "SHORTCUT_CONFIG".
 
 Windows:
 
 ```powershell
-> $Env:SHORTCUT_CONFIG=<filepath>
+> $Env:SA_CONFIG=<filepath>
 ```
 
 Linux:
 
 ```sh
-export SHORTCUT_COFNIG=<filepath>
+export SA_COFNIG=<filepath>
 ```
 
-## settings.yaml
-
-Please view `docs/configuration.md` for this. 
 ## shortcut files
 
 Please view `docs/shortcut_files.md` for this.
 
-## Variables
+## CLI
 
-Please view `docs/variables.md` for this.
+Please view `docs/cli.md` for this.
 
 ## Templating
 
