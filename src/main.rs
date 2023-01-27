@@ -1,19 +1,17 @@
-
 use glob::glob;
-use std::fs::create_dir;
-use std::path::{PathBuf, Path};
 use std::collections::HashMap;
 use std::env;
+use std::fs::create_dir;
+use std::path::{Path, PathBuf};
 
 mod commands;
-mod shortcut;
 mod settings;
-use shortcut::{Shortcut, Variables};
+mod shortcut;
 use settings::Settings;
-
+use shortcut::{Shortcut, Variables};
 
 // Discover command files.
-fn discover_commands(mut folder: String) -> Vec<Shortcut>{
+fn discover_commands(mut folder: String) -> Vec<Shortcut> {
     let mut shortcuts: Vec<Shortcut> = vec![];
 
     if folder.ends_with('/') {
@@ -29,7 +27,7 @@ fn discover_commands(mut folder: String) -> Vec<Shortcut>{
 
     for path in files {
         println!("{}", &path.display());
-    
+
         let shortcut_file = Shortcut::new(&path);
 
         if let Ok(shortcut) = shortcut_file {
@@ -42,10 +40,8 @@ fn discover_commands(mut folder: String) -> Vec<Shortcut>{
     shortcuts
 }
 
-
 fn discover_config_dir() -> String {
     let directory: String;
-
 
     if let Ok(dir) = env::var("SHORTCUT_ALIAS_CONFIG") {
         directory = dir;
@@ -57,18 +53,17 @@ fn discover_config_dir() -> String {
                 let folder: String = format!("{}/.shortcut", dir.display());
                 let folder_path: &Path = Path::new(&folder);
 
-                if ! folder_path.exists() {
+                if !folder_path.exists() {
                     create_dir(folder_path).unwrap();
                 };
                 directory = folder
-            },
-            None => directory = String::from("./.shortcut")
+            }
+            None => directory = String::from("./.shortcut"),
         }
     };
 
     directory
 }
-
 
 fn main() {
     let mut cli = clap::Command::new("shortcut-alias")
@@ -82,7 +77,7 @@ fn main() {
                 .short('c')
                 .default_value("on")
                 .required(false)
-                .help("Set to 'off' to turn terminal colour off.")
+                .help("Set to 'off' to turn terminal colour off."),
         )
         .arg(
             clap::Arg::new("header")
@@ -91,7 +86,7 @@ fn main() {
                 .short('e')
                 .default_value("on")
                 .required(false)
-                .help("Set to 'off' to not show command header.")
+                .help("Set to 'off' to not show command header."),
         )
         .arg(
             clap::Arg::new("body")
@@ -100,7 +95,7 @@ fn main() {
                 .short('b')
                 .default_value("on")
                 .required(false)
-                .help("Set to 'off' to not show command output.")
+                .help("Set to 'off' to not show command output."),
         )
         .arg(
             clap::Arg::new("footer")
@@ -109,7 +104,7 @@ fn main() {
                 .short('f')
                 .default_value("on")
                 .required(false)
-                .help("Set to 'off' to not show the command footer.")
+                .help("Set to 'off' to not show the command footer."),
         )
         .arg(
             clap::Arg::new("silent")
@@ -117,7 +112,7 @@ fn main() {
                 .long("silent")
                 .short('s')
                 .required(false)
-                .help("Set to suppress all output.")
+                .help("Set to suppress all output."),
         );
 
     let mut shortcuts: HashMap<String, Shortcut> = HashMap::new();
@@ -160,5 +155,4 @@ fn main() {
     } else {
         cli.print_long_help().unwrap();
     };
-
 }

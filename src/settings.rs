@@ -1,14 +1,12 @@
 use colored::control::SHOULD_COLORIZE;
 
-
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Settings {
     pub show_color: bool,
     pub show_header: bool,
     pub show_body: bool,
-    pub show_footer: bool
+    pub show_footer: bool,
 }
-
 
 impl Settings {
     pub fn new() -> Settings {
@@ -16,7 +14,7 @@ impl Settings {
             show_color: true,
             show_header: true,
             show_body: true,
-            show_footer: true
+            show_footer: true,
         }
     }
 

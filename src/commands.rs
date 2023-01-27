@@ -4,10 +4,9 @@ use std::process::{Command, Stdio};
 fn output_as_string(output: Vec<u8>) -> Option<String> {
     match String::from_utf8(output) {
         Ok(s) => Some(s),
-        _ => None
+        _ => None,
     }
 }
-
 
 pub fn run_command(command: &str) -> (String, i32) {
     let command = Command::new("pwsh")

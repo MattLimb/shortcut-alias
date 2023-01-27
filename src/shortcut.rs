@@ -1,39 +1,36 @@
 use core::convert::From;
 use std::collections::HashMap;
+use std::env;
 use std::fs;
 use std::path::PathBuf;
-use std::env;
 
 use colored::Colorize;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::commands::run_command;
 use crate::settings::Settings;
 
-
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct CommandOutput {
     pub output: String,
-    pub status: i32
+    pub status: i32,
 }
-
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Variables {
     pub args: HashMap<String, String>,
     pub variables: HashMap<String, String>,
     pub env: HashMap<String, String>,
-    pub commands: HashMap<String, CommandOutput>
+    pub commands: HashMap<String, CommandOutput>,
 }
-
 
 impl Variables {
     pub fn new() -> Variables {
-        Variables { 
+        Variables {
             args: HashMap::new(),
             variables: HashMap::new(),
             env: HashMap::new(),
-            commands: HashMap::new()
+            commands: HashMap::new(),
         }
     }
 
@@ -64,31 +61,27 @@ impl Variables {
             };
         }
     }
-
 }
-
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum ArgumentType {
-    #[serde(alias="flag")]
+    #[serde(alias = "flag")]
     Flag,
-    #[serde(alias="data")]
-    Data
+    #[serde(alias = "data")]
+    Data,
 }
-
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Argument {
     pub arg_type: ArgumentType,
     pub name: String,
     pub default: Option<String>,
-    pub help: Option<String>
+    pub help: Option<String>,
 }
 
 impl Argument {
-    pub fn argument(&self) -> clap::Arg{
-        let mut arg: clap::Arg = clap::Arg::new(&self.name)
-            .long(&self.name);
+    pub fn argument(&self) -> clap::Arg {
+        let mut arg: clap::Arg = clap::Arg::new(&self.name).long(&self.name);
         let mut action = clap::ArgAction::Set;
 
         // Set the flag variables.
@@ -115,33 +108,34 @@ impl Argument {
     }
 }
 
-
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Command {
     pub name: String,
     pub description: Option<String>,
-    pub command: String
+    pub command: String,
 }
 
 impl Command {
     pub fn run(&self, vars: &mut Variables, settings: &Settings) -> i32 {
-        
         if settings.show_header {
-            println!("\n{}", format!("{:=<80}", format!("{} ", &self.name)).green());
+            println!(
+                "\n{}",
+                format!("{:=<80}", format!("{} ", &self.name)).green()
+            );
         };
 
         let mut jinja = minijinja::Environment::new();
         jinja.add_template("template", &self.command).unwrap();
 
         let template = jinja.get_template("template").unwrap();
-        let command = &template.render(
-            minijinja::context!(
+        let command = &template
+            .render(minijinja::context!(
                 args => &vars.args,
                 variables => &vars.variables,
                 env => &vars.env,
                 commands => &vars.commands
-            )
-        ).unwrap_or_else(|_| String::from(&self.command)); 
+            ))
+            .unwrap_or_else(|_| String::from(&self.command));
 
         let (output, status) = run_command(command);
 
@@ -154,18 +148,11 @@ impl Command {
             println!("{}", line.green());
         };
 
-        vars.add_command(
-            String::from(&self.name),
-            CommandOutput { 
-                output,
-                status
-            }
-        );
+        vars.add_command(String::from(&self.name), CommandOutput { output, status });
 
         status
     }
 }
-
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Shortcut {
@@ -174,7 +161,7 @@ pub struct Shortcut {
     pub args: Option<Vec<Argument>>,
     pub env: Option<Vec<String>>,
     pub variables: Option<HashMap<String, String>>,
-    pub commands: Vec<Command>
+    pub commands: Vec<Command>,
 }
 
 impl Shortcut {
@@ -215,7 +202,10 @@ impl Shortcut {
 
     pub fn print_header(&self, show: bool) {
         if show {
-            println!("{:=<80}", format!("{} - {} ", "Shortcut Alias", &self.name).green());
+            println!(
+                "{:=<80}",
+                format!("{} - {} ", "Shortcut Alias", &self.name).green()
+            );
 
             if let Some(desc) = &self.description {
                 println!("{}", format!("{} ", desc).green());
@@ -234,5 +224,4 @@ impl Shortcut {
 
         Ok(())
     }
-
 }
