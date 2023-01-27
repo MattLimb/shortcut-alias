@@ -4,7 +4,7 @@ This is a personal project for configurable multiple command aliases.
 
 Disclaimer - This is a personal project, intended to learn and progress my programming knowlege. If you do find this project useful, and want to contribute, please feel free to open PRs or issues, and I'll do my best to process them as quickly as I can.
 
-## Build
+## Install Using Rust
 
 Firstly, this repo will require that Rust is installed, along with Cargo.
 
@@ -21,6 +21,21 @@ $ git clone https://github.com/MattLimb/shortcut-alias.git
 ```sh
 $ cargo install --path .
 ```
+
+## Install with Python
+
+It is reccommmended to install this project using `pipx` for easier dependancy management.
+
+```sh
+$ pipx run shortcut-alias
+```
+
+Alternatively, if you'd prefer to use `pip`:
+
+```sh
+$ pip install shortcut-alias
+```
+
 
 ## First Run 
 
@@ -65,3 +80,14 @@ Please view `docs/cli.md` for this.
 ## Templating
 
 Please view `docs/templating.md` for this.
+
+# Future Features
+
+__Please note: This section is for me to outline some future plans I have for this project. I cannot guarantee these features will materialize.__
+
+- Unit Tests
+- Simple Command Conditionals
+    - Allows for commands to run if conditions are met. Such as a flag is specified or a command fails.
+- Templated Variables
+- Default values for environment variables
+- Built-in shortcut file linter

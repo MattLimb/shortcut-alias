@@ -1,0 +1,32 @@
+[project]
+name = "shortcut-alias"
+version = "1.0.0"
+description = "Configurable Aliases"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.6"
+license = { file = "LICENSE" }
+keywords = [ "alias", "shortcut", "shortcut_alias" ]
+authors = [
+    { name = "Matt Limb", email = "matt.limb17@gmail.com"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Operating System :: OS Independent"
+]
+dependencies = []
+
+[project.urls]
+homepage = "https://github.com/MattLimb/shortcut-alias/"
+
+[tool.maturin]
+bindings = "bin"
+manifest-path = "Cargo.toml"
+python-source = "python"
+strip = true
+
+[build-system]
+requires = ["maturin>=0.14.10,<0.15"]
+# We depend on >=0.14.10 because we specify name in
+# [package.metadata.maturin] in Cargo.toml.
+build-backend = "maturin"
