@@ -17,13 +17,11 @@ pub fn run_command(command: &str) -> (String, i32) {
         .output()
         .expect("Couldn't Run Command");
 
-    let output: String;
-
-    if command.status.success() {
-        output = output_as_string(command.stdout.to_vec()).unwrap();
+    let output: String = if command.status.success() {
+        output_as_string(command.stdout.to_vec()).unwrap()
     } else {
-        output = output_as_string(command.stderr.to_vec()).unwrap();
-    }
+        output_as_string(command.stderr.to_vec()).unwrap()
+    };
 
     let status: i32 = command.status.code().unwrap_or(1);
 

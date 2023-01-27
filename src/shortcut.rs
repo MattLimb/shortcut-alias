@@ -4,24 +4,21 @@ use std::fs;
 use std::path::PathBuf;
 use std::env;
 
-use clap;
 use colored::Colorize;
-use minijinja;
 use serde::{Serialize, Deserialize};
-use serde_yaml;
 
 use crate::commands::run_command;
 use crate::settings::Settings;
 
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct CommandOutput {
     pub output: String,
     pub status: i32
 }
 
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Variables {
     pub args: HashMap<String, String>,
     pub variables: HashMap<String, String>,
@@ -55,7 +52,7 @@ impl Variables {
     }
 
     pub fn add_command(&mut self, command_name: String, command: CommandOutput) {
-        let cmd_name: String = command_name.replace(" ", "_").to_lowercase();
+        let cmd_name: String = command_name.replace(' ', "_").to_lowercase();
 
         self.commands.insert(cmd_name, command);
     }
@@ -64,23 +61,23 @@ impl Variables {
         for env_key in env_vars.iter() {
             if let Ok(value) = env::var(env_key) {
                 self.env.insert(String::from(env_key), value);
-            }
+            };
         }
     }
 
 }
 
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum ArgumentType {
     #[serde(alias="flag")]
-    FLAG,
+    Flag,
     #[serde(alias="data")]
-    DATA
+    Data
 }
 
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Argument {
     pub arg_type: ArgumentType,
     pub name: String,
@@ -95,7 +92,7 @@ impl Argument {
         let mut action = clap::ArgAction::Set;
 
         // Set the flag variables.
-        if &self.arg_type == &ArgumentType::FLAG {
+        if self.arg_type == ArgumentType::Flag {
             // Default is false for a flag.
             arg = arg.default_value("false");
             action = clap::ArgAction::SetTrue;
@@ -103,13 +100,13 @@ impl Argument {
             // Set the default value if the argtype is data.
             if let Some(default) = &self.default {
                 arg = arg.default_value(default);
-            }
-        }
+            };
+        };
 
         // Set help message.
         if let Some(help) = &self.help {
             arg = arg.help(help);
-        }
+        };
 
         // Set the action required.
         arg = arg.action(action);
@@ -119,7 +116,7 @@ impl Argument {
 }
 
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Command {
     pub name: String,
     pub description: Option<String>,
@@ -131,7 +128,7 @@ impl Command {
         
         if settings.show_header {
             println!("\n{}", format!("{:=<80}", format!("{} ", &self.name)).green());
-        }
+        };
 
         let mut jinja = minijinja::Environment::new();
         jinja.add_template("template", &self.command).unwrap();
@@ -144,24 +141,24 @@ impl Command {
                 env => &vars.env,
                 commands => &vars.commands
             )
-        ).unwrap_or(String::from(&self.command)); 
+        ).unwrap_or_else(|_| String::from(&self.command)); 
 
         let (output, status) = run_command(command);
 
         if settings.show_body {
             print!("{}", &output);
-        }
+        };
 
         if settings.show_footer {
             let line: String = format!("{:=<80}", format!("Exit Code: {} ", status.clone()));
             println!("{}", line.green());
-        }
+        };
 
         vars.add_command(
             String::from(&self.name),
             CommandOutput { 
-                output: output,
-                status: status.clone() 
+                output,
+                status
             }
         );
 
@@ -170,7 +167,7 @@ impl Command {
 }
 
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Shortcut {
     pub name: String,
     pub description: Option<String>,
@@ -183,17 +180,17 @@ pub struct Shortcut {
 impl Shortcut {
     pub fn new(filepath: &PathBuf) -> Result<Shortcut, String> {
         let file_display = &filepath.display();
-        let content = fs::read_to_string(&filepath);
+        let content = fs::read_to_string(filepath);
 
-        if let Err(_) = content {
+        if content.is_err() {
             return Err(format!("Could not read shortcut file: {}", file_display));
-        }
+        };
 
         let parsed = serde_yaml::from_str(&content.unwrap());
 
-        if let Err(_) = parsed {
+        if parsed.is_err() {
             return Err(format!("Could parse shortcut YAML: {}", file_display));
-        }
+        };
 
         Ok(parsed.unwrap())
     }
@@ -204,14 +201,14 @@ impl Shortcut {
         // Set help message
         if let Some(help) = &self.description {
             command = command.about(help);
-        }
+        };
 
         // Set arguments
         if let Some(arguments) = &self.args {
             for arg in arguments.iter() {
                 command = command.arg(arg.argument());
             }
-        }
+        };
 
         command
     }
@@ -222,8 +219,8 @@ impl Shortcut {
 
             if let Some(desc) = &self.description {
                 println!("{}", format!("{} ", desc).green());
-            }
-        }
+            };
+        };
     }
 
     pub fn run(&self, vars: &mut Variables, settings: &Settings) -> Result<(), String> {
@@ -232,7 +229,7 @@ impl Shortcut {
 
             if command_status != 0 {
                 return Err(String::from("Command failed."));
-            }
+            };
         }
 
         Ok(())

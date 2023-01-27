@@ -1,6 +1,4 @@
 
-use clap;
-use home;
 use glob::glob;
 use std::fs::create_dir;
 use std::path::{PathBuf, Path};
@@ -15,27 +13,30 @@ use settings::Settings;
 
 
 // Discover command files.
-fn discover_commands(mut folder: String) -> Vec<PathBuf>{
-    let mut shortcuts: Vec<PathBuf> = vec![];
+fn discover_commands(mut folder: String) -> Vec<Shortcut>{
+    let mut shortcuts: Vec<Shortcut> = vec![];
 
-    if folder.ends_with("/") {
-        folder = String::from(folder.strip_suffix("/").unwrap());
-    }
+    if folder.ends_with('/') {
+        folder = String::from(folder.strip_suffix('/').unwrap());
+    } else if folder.ends_with('\\') {
+        folder = String::from(folder.strip_suffix('\\').unwrap());
+    };
 
-    // Find .yaml files.
-    let files = glob(&format!("{}/**/*.yaml", folder)).unwrap();
-    for path in files.into_iter() {
-        if let Ok(item) = path {
-            shortcuts.push(item)
-        }
-    }
+    let glob_pattern: String = format!("{}/**/*.[yaml]*", folder);
 
-    // Find .yml files.
-    let files = glob(&format!("{}/**/*.yml", folder)).unwrap();
-    for path in files.into_iter() {
-        if let Ok(item) = path {
-            shortcuts.push(item)
-        }
+    let files = glob(&glob_pattern).unwrap();
+    let files: Vec<PathBuf> = files.into_iter().filter_map(|path| path.ok()).collect();
+
+    for path in files {
+        println!("{}", &path.display());
+    
+        let shortcut_file = Shortcut::new(&path);
+
+        if let Ok(shortcut) = shortcut_file {
+            shortcuts.push(shortcut);
+        } else {
+            panic!("Shortcut file is not Valid.");
+        };
     }
 
     shortcuts
@@ -43,10 +44,13 @@ fn discover_commands(mut folder: String) -> Vec<PathBuf>{
 
 
 fn discover_config_dir() -> String {
+    let directory: String;
+
+
     if let Ok(dir) = env::var("SHORTCUT_ALIAS_CONFIG") {
-        return dir;
+        directory = dir;
     } else if let Ok(dir) = env::var("SA_CONFIG") {
-        return dir;
+        directory = dir;
     } else {
         match home::home_dir() {
             Some(dir) => {
@@ -55,12 +59,14 @@ fn discover_config_dir() -> String {
 
                 if ! folder_path.exists() {
                     create_dir(folder_path).unwrap();
-                }
-                return folder
+                };
+                directory = folder
             },
-            None => return String::from("./.shortcut")
+            None => directory = String::from("./.shortcut")
         }
-    }
+    };
+
+    directory
 }
 
 
@@ -116,13 +122,10 @@ fn main() {
 
     let mut shortcuts: HashMap<String, Shortcut> = HashMap::new();
     let config_dir: String = discover_config_dir();
-    println!("{}", &config_dir);
 
-    for file_path in discover_commands(config_dir).iter() {
-        if let Ok(cut) = Shortcut::new(file_path) {
-            cli = cli.subcommand(&cut.command());
-            shortcuts.insert(cut.name.clone(), cut);
-        }
+    for shortcut in discover_commands(config_dir).iter() {
+        cli = cli.subcommand(&shortcut.command());
+        shortcuts.insert(shortcut.name.clone(), shortcut.clone());
     }
 
     let matches = cli.clone().get_matches();
@@ -137,25 +140,25 @@ fn main() {
 
         if let Some(arguments) = &shortcut.args {
             vars.add_args(arguments.clone(), arg_matches);
-        }
+        };
 
         if let Some(variables) = &shortcut.variables {
             vars.add_variables(variables.clone());
-        }
+        };
 
         if let Some(envs) = &shortcut.env {
             vars.add_envs(envs.clone());
-        }
+        };
 
         shortcut.print_header(settings.show_header);
 
         let exit: Result<(), String> = shortcut.run(&mut vars, &settings);
 
-        if let Err(_) = exit {
+        if exit.is_err() {
             println!("{:=<80}", "Command Failed! ");
-        }
+        };
     } else {
         cli.print_long_help().unwrap();
-    }
+    };
 
 }

@@ -1,4 +1,4 @@
-# Shortcut-Alias Shortcut Schema
+# Shortcut-Alias Shortcut Yaml Schema
 
 # Name the command - This will be used to invoke the command on the command-line.
 name: string

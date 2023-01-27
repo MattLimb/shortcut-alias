@@ -1,8 +1,7 @@
-use clap;
 use colored::control::SHOULD_COLORIZE;
 
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Settings {
     pub show_color: bool,
     pub show_header: bool,
@@ -29,32 +28,32 @@ impl Settings {
                 settings.show_color = true;
             } else {
                 settings.show_color = false;
-            }
-        }
+            };
+        };
 
         if let Some(value) = args.get_one::<String>("header") {
             if value == &String::from("on") {
                 settings.show_header = true;
             } else {
                 settings.show_header = false;
-            }
-        }
+            };
+        };
 
         if let Some(value) = args.get_one::<String>("body") {
             if value == &String::from("on") {
                 settings.show_body = true;
             } else {
                 settings.show_body = false;
-            }
-        }
+            };
+        };
 
         if let Some(value) = args.get_one::<String>("footer") {
             if value == &String::from("on") {
                 settings.show_footer = true;
             } else {
                 settings.show_footer = false;
-            }
-        }
+            };
+        };
 
         if let Some(value) = args.get_one::<bool>("silent") {
             if *value {
@@ -62,8 +61,8 @@ impl Settings {
                 settings.show_header = false;
                 settings.show_body = false;
                 settings.show_footer = false;
-            }
-        }
+            };
+        };
 
         settings
     }
