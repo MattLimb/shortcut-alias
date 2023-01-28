@@ -82,13 +82,13 @@ fn main() {
         match error {
             SAError::ShortcutFileRead(err) => {
                 println!("{}", format!("[SA] Failed to read file: {}", err).red());
-            },
+            }
             SAError::ShortcutFileParse(err) => {
                 println!(
                     "{}",
                     format!("[SA] Failed to parse YAML file: {}", err).red()
                 );
-            },
+            }
             SAError::CommandFailed(err) => {
                 println!("{}", format!("[SA] Failed to run command: {}", err).red());
             }

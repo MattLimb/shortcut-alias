@@ -7,7 +7,6 @@ use std::path::{Path, PathBuf};
 use crate::errors::SAError;
 use crate::shortcut::Shortcut;
 
-// Discover command files.
 pub fn discover_commands(mut folder: String) -> Result<HashMap<String, Shortcut>, SAError> {
     let mut shortcuts: HashMap<String, Shortcut> = HashMap::new();
 
