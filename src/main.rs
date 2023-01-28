@@ -12,7 +12,7 @@ use errors::SAError;
 use settings::Settings;
 use shortcut::{Shortcut, Variables};
 
-fn main() -> Result<(), SAError> {
+fn shortcut_alias() -> Result<(), SAError> {
     let config_dir: String = discover_config_dir();
     let shortcuts: HashMap<String, Shortcut> = discover_commands(config_dir)?;
     let mut cli = build_cli(shortcuts.values().into_iter().collect());
@@ -30,7 +30,7 @@ fn main() -> Result<(), SAError> {
 
         for cmd in shortcut.commands.iter() {
             if settings.show_header {
-                let mut header = format!("{:=<80}", format!("[SA] Running {} ", &cmd.name));
+                let mut header = format!("{:=<80}", format!("[SA] Running '{}' ", &cmd.name));
 
                 if let Some(desc) = &cmd.description {
                     header = format!("{header}\n{desc}\n{:=<80}", String::new());
@@ -41,8 +41,7 @@ fn main() -> Result<(), SAError> {
                     first = false;
                 } else {
                     println!("\n{}", header.green());
-                }
-                
+                };
             };
 
             let command: String = vars.render_command(&cmd.command);
@@ -53,14 +52,16 @@ fn main() -> Result<(), SAError> {
             };
 
             if settings.show_footer {
-                let footer: String =
-                    format!("{:=<80}", format!("[SA] Exit Code: {} ", result.status.clone()));
+                let footer: String = format!(
+                    "{:=<80}",
+                    format!("[SA] Exit Code: {} ", result.status.clone())
+                );
                 println!("{}", footer.green());
             };
 
             if result.status != 0 {
                 return Err(SAError::CommandFailed(format!(
-                    "Command '{}' failed. Stopping Shortcut Alias.",
+                    "Command '{}' failed.",
                     cmd.name
                 )));
             }
@@ -69,7 +70,28 @@ fn main() -> Result<(), SAError> {
         }
     } else {
         cli.print_help().unwrap();
-    }
+    };
 
     Ok(())
+}
+
+fn main() {
+    let run_program = shortcut_alias();
+
+    if let Err(error) = run_program {
+        match error {
+            SAError::ShortcutFileRead(err) => {
+                println!("{}", format!("[SA] Failed to read file: {}", err).red());
+            },
+            SAError::ShortcutFileParse(err) => {
+                println!(
+                    "{}",
+                    format!("[SA] Failed to parse YAML file: {}", err).red()
+                );
+            },
+            SAError::CommandFailed(err) => {
+                println!("{}", format!("[SA] Failed to run command: {}", err).red());
+            }
+        }
+    };
 }

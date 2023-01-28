@@ -23,7 +23,6 @@ pub fn discover_commands(mut folder: String) -> Result<HashMap<String, Shortcut>
     let files: Vec<PathBuf> = files.into_iter().filter_map(|path| path.ok()).collect();
 
     for path in files {
-        println!("{}", &path.display());
         let shortcut_file = Shortcut::new(&path)?;
         shortcuts.insert(shortcut_file.name.to_owned(), shortcut_file);
     }
