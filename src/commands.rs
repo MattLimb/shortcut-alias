@@ -1,6 +1,12 @@
+use serde::{Deserialize, Serialize};
 use std::process::{Command, Stdio};
 
-// Run the commands
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+pub struct CommandOutput {
+    pub output: String,
+    pub status: i32,
+}
+
 fn output_as_string(output: Vec<u8>) -> Option<String> {
     match String::from_utf8(output) {
         Ok(s) => Some(s),
@@ -8,7 +14,7 @@ fn output_as_string(output: Vec<u8>) -> Option<String> {
     }
 }
 
-pub fn run_command(command: &str) -> (String, i32) {
+pub fn run_command(command: &str) -> CommandOutput {
     let command = Command::new("pwsh")
         .args(["-NoLogo", "-Command", command])
         .stdout(Stdio::piped())
@@ -24,5 +30,5 @@ pub fn run_command(command: &str) -> (String, i32) {
 
     let status: i32 = command.status.code().unwrap_or(1);
 
-    (output, status)
+    CommandOutput { output, status }
 }

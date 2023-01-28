@@ -14,19 +14,6 @@ minijinja = "0.27.0"
 serde = { version = "1.0.152", features = ["derive"] }
 serde_yaml = "0.9.16"
 
-
-[[bin]]
-name = "shortcut-alias"
-path = "src/main.rs"
-
-[[bin]]
-name = "shortcut"
-path = "src/main.rs"
-
-[[bin]]
-name = "sa"
-path = "src/main.rs"
-
 [package.metadata.maturin]
 name = "shortcut-alias"
 # Setting the name here is necessary for maturin to include the package in its builds.

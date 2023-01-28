@@ -1,158 +1,75 @@
-use glob::glob;
+use colored::Colorize;
 use std::collections::HashMap;
-use std::env;
-use std::fs::create_dir;
-use std::path::{Path, PathBuf};
 
+mod cli;
 mod commands;
+mod errors;
 mod settings;
 mod shortcut;
+use cli::{build_cli, discover_commands, discover_config_dir};
+use commands::{run_command, CommandOutput};
+use errors::SAError;
 use settings::Settings;
 use shortcut::{Shortcut, Variables};
 
-// Discover command files.
-fn discover_commands(mut folder: String) -> Vec<Shortcut> {
-    let mut shortcuts: Vec<Shortcut> = vec![];
-
-    if folder.ends_with('/') {
-        folder = String::from(folder.strip_suffix('/').unwrap());
-    } else if folder.ends_with('\\') {
-        folder = String::from(folder.strip_suffix('\\').unwrap());
-    };
-
-    let glob_pattern: String = format!("{}/**/*.[yaml]*", folder);
-
-    let files = glob(&glob_pattern).unwrap();
-    let files: Vec<PathBuf> = files.into_iter().filter_map(|path| path.ok()).collect();
-
-    for path in files {
-        println!("{}", &path.display());
-
-        let shortcut_file = Shortcut::new(&path);
-
-        if let Ok(shortcut) = shortcut_file {
-            shortcuts.push(shortcut);
-        } else {
-            panic!("Shortcut file is not Valid.");
-        };
-    }
-
-    shortcuts
-}
-
-fn discover_config_dir() -> String {
-    let directory: String;
-
-    if let Ok(dir) = env::var("SHORTCUT_ALIAS_CONFIG") {
-        directory = dir;
-    } else if let Ok(dir) = env::var("SA_CONFIG") {
-        directory = dir;
-    } else {
-        match home::home_dir() {
-            Some(dir) => {
-                let folder: String = format!("{}/.shortcut", dir.display());
-                let folder_path: &Path = Path::new(&folder);
-
-                if !folder_path.exists() {
-                    create_dir(folder_path).unwrap();
-                };
-                directory = folder
-            }
-            None => directory = String::from("./.shortcut"),
-        }
-    };
-
-    directory
-}
-
-fn main() {
-    let mut cli = clap::Command::new("shortcut-alias")
-        .about("A powerful alias tool.")
-        .author("Matt Limb <matt.limb17@gmail.com>")
-        .version(env!("CARGO_PKG_VERSION"))
-        .arg(
-            clap::Arg::new("color")
-                .action(clap::ArgAction::Set)
-                .long("color")
-                .short('c')
-                .default_value("on")
-                .required(false)
-                .help("Set to 'off' to turn terminal colour off."),
-        )
-        .arg(
-            clap::Arg::new("header")
-                .action(clap::ArgAction::Set)
-                .long("header")
-                .short('e')
-                .default_value("on")
-                .required(false)
-                .help("Set to 'off' to not show command header."),
-        )
-        .arg(
-            clap::Arg::new("body")
-                .action(clap::ArgAction::Set)
-                .long("body")
-                .short('b')
-                .default_value("on")
-                .required(false)
-                .help("Set to 'off' to not show command output."),
-        )
-        .arg(
-            clap::Arg::new("footer")
-                .action(clap::ArgAction::Set)
-                .long("footer")
-                .short('f')
-                .default_value("on")
-                .required(false)
-                .help("Set to 'off' to not show the command footer."),
-        )
-        .arg(
-            clap::Arg::new("silent")
-                .action(clap::ArgAction::SetTrue)
-                .long("silent")
-                .short('s')
-                .required(false)
-                .help("Set to suppress all output."),
-        );
-
-    let mut shortcuts: HashMap<String, Shortcut> = HashMap::new();
+fn main() -> Result<(), SAError> {
     let config_dir: String = discover_config_dir();
+    let shortcuts: HashMap<String, Shortcut> = discover_commands(config_dir)?;
+    let mut cli = build_cli(shortcuts.values().into_iter().collect());
+    let cli_matches = &cli.clone().get_matches();
 
-    for shortcut in discover_commands(config_dir).iter() {
-        cli = cli.subcommand(&shortcut.command());
-        shortcuts.insert(shortcut.name.clone(), shortcut.clone());
-    }
-
-    let matches = cli.clone().get_matches();
-
-    let settings = Settings::new_from_matches(&matches);
+    let settings = Settings::new_from_matches(cli_matches);
     settings.set_terminal_color();
 
-    if let Some((cmd_name, arg_matches)) = matches.subcommand() {
+    if let Some((cmd_name, arg_matches)) = cli_matches.subcommand() {
         let shortcut = &shortcuts[cmd_name];
 
-        let mut vars = Variables::new();
+        let mut vars = Variables::new(shortcut, arg_matches);
 
-        if let Some(arguments) = &shortcut.args {
-            vars.add_args(arguments.clone(), arg_matches);
-        };
+        let mut first: bool = true;
 
-        if let Some(variables) = &shortcut.variables {
-            vars.add_variables(variables.clone());
-        };
+        for cmd in shortcut.commands.iter() {
+            if settings.show_header {
+                let mut header = format!("{:=<80}", format!("[SA] Running {} ", &cmd.name));
 
-        if let Some(envs) = &shortcut.env {
-            vars.add_envs(envs.clone());
-        };
+                if let Some(desc) = &cmd.description {
+                    header = format!("{header}\n{desc}\n{:=<80}", String::new());
+                };
 
-        shortcut.print_header(settings.show_header);
+                if first {
+                    println!("{}", header.green());
+                    first = false;
+                } else {
+                    println!("\n{}", header.green());
+                }
+                
+            };
 
-        let exit: Result<(), String> = shortcut.run(&mut vars, &settings);
+            let command: String = vars.render_command(&cmd.command);
+            let result: CommandOutput = run_command(&command);
 
-        if exit.is_err() {
-            println!("{:=<80}", "Command Failed! ");
-        };
+            if settings.show_body {
+                print!("{}", &result.output);
+            };
+
+            if settings.show_footer {
+                let footer: String =
+                    format!("{:=<80}", format!("[SA] Exit Code: {} ", result.status.clone()));
+                println!("{}", footer.green());
+            };
+
+            if result.status != 0 {
+                return Err(SAError::CommandFailed(format!(
+                    "Command '{}' failed. Stopping Shortcut Alias.",
+                    cmd.name
+                )));
+            }
+
+            vars.add_command(cmd.name.to_owned(), result)
+        }
     } else {
-        cli.print_long_help().unwrap();
-    };
+        cli.print_help().unwrap();
+    }
+
+    Ok(())
 }
