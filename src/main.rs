@@ -92,6 +92,9 @@ fn main() {
             SAError::CommandFailed(err) => {
                 println!("{}", format!("[SA] Failed to run command: {}", err).red());
             }
+            SAError::GlobFailure(err) => {
+                println!("{}", format!("[SA] Failed to parse files: {}", err).red());
+            }
         }
     };
 }
