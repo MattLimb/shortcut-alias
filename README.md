@@ -36,6 +36,8 @@ Alternatively, if you'd prefer to use `pip`:
 $ pip install shortcut-alias
 ```
 
+__NOTE: This method currently is out of date. For now, it is recommended to use the cargo method above.__ 
+
 
 ## First Run 
 
