@@ -1,25 +1,41 @@
 # shortcut-alias
 
-This is a personal project for configurable aliases. 
+This is a personal project for configurable multiple command aliases. 
 
-As a personal project - there is no formal progression or documentation. I shall do my best to update this project, as I find issues with it, and add new features as I find needs. 
+Disclaimer - This is a personal project, intended to learn and progress my programming knowlege. If you do find this project useful, and want to contribute, please feel free to open PRs or issues, and I'll do my best to process them as quickly as I can.
 
-## Install
+## Install Using Rust
 
-```sh
-> pip install shortcut-alias
-```
+Firstly, this repo will require that Rust is installed, along with Cargo.
 
-## Usage
+To install Rust, please refer to the Rust docs: https://rustup.rs/
 
-Shortcut-alias installs the following commands onto your system:
+1. Clone the Git repo.
 
 ```sh
-> shortcut-alias <command> <command_options>
-> shortcut <command> <command_options>
-> sa <command> <command_options>
-
+$ git clone https://github.com/MattLimb/shortcut-alias.git
 ```
+
+2. Install Shortcut Alias using Cargo
+
+```sh
+$ cargo install --path .
+```
+
+## Install with Python
+
+It is reccommmended to install this project using `pipx` for easier dependancy management.
+
+```sh
+$ pipx run shortcut-alias
+```
+
+Alternatively, if you'd prefer to use `pip`:
+
+```sh
+$ pip install shortcut-alias
+```
+
 
 ## First Run 
 
@@ -31,43 +47,47 @@ On Windows:
 
 | Name            | Filepath                                     |
 | --------------- | -------------------------------------------- |
-| root folder     | `C:\Users\<username>\shortcut`               |
-| settings        | `C:\Users\<username>\shortcut\settings.yaml` |
-| commands folder | `C:\Users\<username>\shortcut\shortcut.d`    |
+| shortcut folder | `C:\Users\<username>\.shortcut`              |
 
 On Linux:
 
 | Name            | Filepath                   |
 | --------------- | -------------------------- |
-| root folder     | `~\shortcut`               |
-| settings        | `~\shortcut\settings.yaml` |
-| commands folder | `~\shortcut\shortcut.d`    |
+| shortcut folder | `~\.shortcut`               |
 
 To change this, set the environment variable "SHORTCUT_CONFIG".
 
 Windows:
 
 ```powershell
-> $Env:SHORTCUT_CONFIG=<filepath>
+> $Env:SA_CONFIG=<filepath>
 ```
 
 Linux:
 
 ```sh
-export SHORTCUT_COFNIG=<filepath>
+export SA_COFNIG=<filepath>
 ```
 
-## settings.yaml
-
-Please view `docs/configuration.md` for this. 
-## shortcut.d files
+## shortcut files
 
 Please view `docs/shortcut_files.md` for this.
 
-## Variables
+## CLI
 
-Please view `docs/variables.md` for this.
+Please view `docs/cli.md` for this.
 
 ## Templating
 
 Please view `docs/templating.md` for this.
+
+# Future Features
+
+__Please note: This section is for me to outline some future plans I have for this project. I cannot guarantee these features will materialize.__
+
+- Unit Tests
+- Simple Command Conditionals
+    - Allows for commands to run if conditions are met. Such as a flag is specified or a command fails.
+- Templated Variables
+- Default values for environment variables
+- Built-in shortcut file linter

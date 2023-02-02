@@ -1,0 +1,92 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://github.com/MattLimb/shortcut-alias/schema/shortcut_schema.json",
+    "title": "Shortcut Alias Shortcut File",
+    "description": "The JSON schema representing a valid shortcut file.",
+    "type": "object",
+    "required": [
+        "name",
+        "commands"
+    ],
+    "properties": {
+        "name": {
+            "description": "The name of the command to be run by Shortcut Alias.",
+            "type": "string"
+        },
+        "description": {
+            "description": "An optional and brief description of the alias file.",
+            "type": "string"
+        },
+        "args": {
+            "description": "Configuration options to be applied to the command line for this command.",
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "arg_type": {
+                        "description": "The type of argument to expose on the command line.",
+                        "type": "string",
+                        "enum": [
+                            "flag",
+                            "data"
+                        ]
+                    },
+                    "name": {
+                        "description": "The of the argument on the command line. Underscores are replaced with dashes and a double dash is appended to the start.",
+                        "type": "string"
+                    },
+                    "default": {
+                        "description": "A value to use if the option is not specified on the command line. If not set, the option becomes required.",
+                        "type": "string"
+                    },
+                    "help": {
+                        "description": "A short set of help text to appear next to the option when '--help' is called on Shortcut Alias.",
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "env": {
+            "description": "A list of environmental variables to retrieve when the command is invoked.",
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+                "type": "string"
+            }
+        },
+        "variables": {
+            "description": "Static variables to make availiable to the running of the commands.",
+            "type": "object",
+            "patternProperties": {
+                "^*$": {
+                    "type": "string"
+                }
+            }
+        },
+        "commands": {
+            "description": "A list of commands to run, in the order they should run.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "description": "The name of the command which will appear in the command header.",
+                        "type": "string"
+                    },
+                    "description": {
+                        "description": "A brief description of the command.",
+                        "type": "string"
+                    },
+                    "command": {
+                        "description": "The command to actually run on the command line as a Jinja string.",
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

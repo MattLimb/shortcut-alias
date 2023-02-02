@@ -1,0 +1,35 @@
+# Shortcut-Alias Shortcut Yaml Schema
+
+# Name the command - This will be used to invoke the command on the command-line.
+name: string
+# Provide a small description of what the commands will do.
+description: string
+
+
+# Arguments which can be passed in on the command-line.
+args:
+    # The type of argument it is. Supported values are flag or data.
+  - arg_type: flag | data
+    # The name of the argument shown.
+    name: string
+    # Provide a default value. If flag this will be false.
+    default: string
+    # Help text for the command line.
+    help: string
+
+# List of environment variables.
+env:
+  - "KEY"
+
+# Provide static values for use within the commands.
+variables:
+  # Key value store. Key is the variable name. Value is the value.
+  <name>: string # Name your value with whatever is necessary.
+
+
+# The commands to perform.
+commands:
+  # List of commands to be run.
+  - name: string # Optional name for the command.
+    description: string # Optional description for the command.
+    command: string # The commands to be run.
